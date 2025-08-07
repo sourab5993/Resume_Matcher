@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume Matcher</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <style>
+        body {
+            background: linear-gradient(to right, #e0eafc, #cfdef3);
+        }
+        h1 {
+            font-weight: bold;
+        }
+        .form-label {
+            font-weight: 500;
+        }
+        .list-group-item {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            transition: transform 0.2s ease;
+        }
+        .list-group-item:hover {
+            transform: scale(1.02);
+        }
+        button.btn-primary {
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        button.btn-primary:hover {
+            background-color: #0d6efd;
+            transform: scale(1.05);
+        }
+        summary {
+            cursor: pointer;
+            font-weight: 500;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 1em;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="container py-5 animate__animated animate__fadeIn">
+    <h1 class="mb-4 text-primary animate__animated animate__fadeInDown">
+        <i class="fas fa-search"></i> AI Resume Matcher
+    </h1>
+
+    {% if message %}
+        <div class="alert alert-info animate__animated animate__fadeInUp">{{ message }}</div>
+    {% endif %}
+
+    <!-- Progress bar (initially hidden) -->
+    <div id="progressContainer" class="my-4" style="display: none;">
+        <label class="form-label">⏳ Processing Resumes...</label>
+        <div class="progress">
+            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info"
+                 role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                0%
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" action="/matcher" enctype="multipart/form-data"
+          class="mb-5 animate__animated animate__fadeInUp animate__delay-1s" id="resumeForm">
+        <div class="mb-3">
+            <label for="job_description" class="form-label">📄 Job Description</label>
+            <textarea class="form-control shadow-sm" id="job_description" name="job_description" rows="6"
+                      placeholder="Paste job description here..."></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="resumes" class="form-label">📂 Upload Resumes (PDF, DOCX, or TXT)</label>
+            <input class="form-control shadow-sm" type="file" id="resumes" name="resumes" multiple>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg w-100 shadow">
+            <i class="fas fa-magic"></i> Match Resumes
+        </button>
+    </form>
+
+    {% if top_resumes %}
+        <h2 class="mt-5 mb-4 text-success animate__animated animate__fadeInUp">
+            <i class="fas fa-trophy"></i> Top Matching Resumes
+        </h2>
+        <div class="list-group animate__animated animate__fadeInUp animate__delay-1s">
+            {% for filename, score, feedback, structured in zip(top_resumes, similarity_scores, ai_feedbacks, structured_data) %}
+                <div class="list-group-item mb-4 p-4">
+                    <h5 class="mb-3">
+                        <i class="fas fa-file-alt text-secondary"></i>
+                        {{ filename }} -
+                        <span class="badge bg-success">Similarity: {{ score }}</span>
+                    </h5>
+
+                    <details class="mb-3">
+                        <summary>🧠 <strong>AI Feedback</strong></summary>
+                        <pre class="mt-2">{{ feedback }}</pre>
+                    </details>
+
+                    <details>
+                        <summary>📊 <strong>Structured Info</strong></summary>
+                        <pre class="mt-2">{{ structured | tojson(indent=2) }}</pre>
+                    </details>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- JavaScript for progress bar -->
+<script>
+    const form = document.getElementById('resumeForm');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+
+    form.addEventListener('submit', function () {
+        progressContainer.style.display = 'block';
+
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress = Math.min(progress + Math.random() * 10, 95); // Simulated
+            progressBar.style.width = progress + '%';
+            progressBar.setAttribute('aria-valuenow', progress.toFixed(0));
+            progressBar.textContent = progress.toFixed(0) + '%';
+
+            if (progress >= 95) clearInterval(interval);
+        }, 300);
+    });
+</script>
+
+</body>
+</html>
